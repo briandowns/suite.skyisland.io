@@ -1,0 +1,273 @@
+# papago
+
+Modern web framework designed to be full featured and powerful all while being extremely simple to use.
+
+## Quick Start
+
+Below is a very simple demonstration of how to create a handler for a `GET` request. More examples can be found in the [examples](/examples) directory. Each example has a `make` target.
+
+You can make all examples with `make examples_all PAPAGO_USE_MAPLE=1`.
+
+```sh
+make example
+```
+
+A convenience script is included to generate certificates to run the example below.
+
+```sh
+generate_certs.sh
+```
+
+```sh
+make example_ssl
+```
+
+```sh
+make example_websocket
+```
+
+## Features
+
+- RESTful Routing - GET, POST, PUT, DELETE, PATCH support
+- Path Parameters - Dynamic routes like `/users/:id`
+- Wildcard URIs - Example: `/api/v1/*` 
+- Query Parameters - Parse URL query strings
+- Form Parsing - Parse application/x-www-form-urlencoded bodies
+- HTML Templates - Easy dynamic content via server side templating
+- Middleware System - Global and path-specific middleware
+- File stream - video / audio / large files, zero-copy, automatic MIME type detection
+- WebSocket Support - Real-time bidirectional communication
+- WebSocket Client - included
+- Embedded File Support - Embed HTML, JS, CSS, etc into the application
+- JSON Responses - Built-in JSON helpers
+- Static Files - Serve files from directories
+- Thread-Safe - Built on proven concurrent architecture
+- Low Dependencies - Only requires libmicrohttpd + libwebsockets
+- Rate limiting by IP
+- Compression with Gzip
+- Metrics collection and exposure via Prometheus endpoint
+- Simple HTTP Client
+
+### MIME Types Supported
+HTML, CSS, JS, JSON, XML, TXT
+PNG, JPG, GIF, SVG, ICO, WebP
+MP4, WebM, OGG
+MP3, WAV, M4A
+PDF, ZIP, TAR, GZ
+WOFF, WOFF2, TTF
+
+## Dependencies
+
+* libmicrohttpd
+* libwebsockets
+* openssl
+* libmaple - [Maple Template Engine](https://github.com/briandowns/libmaple)
+
+### Build & Install
+
+Papago has the template engine (Maple) disabled by default. If this component is required, add `PAPAGO_USE_MAPLE=1` to the `make` command when building. 
+
+```sh 
+make
+```
+
+```sh
+sudo make install
+```
+
+### Hello World
+
+Default server runs on port `:8080`.
+
+```c
+#include <stdio.h>
+
+#include <papago.h>
+
+void
+hello_handler(papago_request_t *req, papago_response_t *res, void *user_data)
+{
+	PAPAGO_UNUSED(req);
+    PAPAGO_UNUSED(user_data);
+
+	papago_res_json(res, "{\"message\":\"Hello, World!\"}");
+}
+
+int
+main(void)
+{
+	papago_t *server = papago_new();
+	
+	papago_route(server, PAPAGO_GET, "/hello", hello_handler, NULL);
+	
+    papago_config_t config = papago_default_config();
+	papago_start(server, &config); // blocking
+	
+	papago_destroy(server);
+
+	return 0;
+}
+```
+
+Build and run:
+
+```sh
+cc -o hello hello.c -lpapago
+./hello
+```
+
+Test:
+
+```sh
+curl http://localhost:8080/hello
+# {"message":"Hello, World!"}
+```
+
+## Core Concepts
+
+### HTTP Routes
+
+```c
+// basic routes
+papago_route(server, PAPAGO_GET, "/", index_handler, NULL);
+papago_route(server, PAPAGO_POST, "/users", create_user, NULL);
+papago_route(server, PAPAGO_PUT, "/users/:id", update_user, NULL);
+papago_route(server, PAPAGO_DELETE, "/users/:id", delete_user, NULL);
+
+// path parameters
+void
+user_handler(papago_request_t *req, papago_response_t *res, void *user_data)
+{
+    const char *id = papago_req_param(req, "id");
+    // use id...
+}
+papago_route(server, PAPAGO_GET, "/users/:id", user_handler, NULL);
+
+// query parameters
+void
+search_handler(papago_request_t *req, papago_response_t *res, void *user_data)
+{
+    const char *q = papago_req_query(req, "q");
+    const char *page = papago_req_query(req, "page");
+    // use q and page...
+}
+papago_route(server, PAPAGO_GET, "/search", search_handler, NULL);
+```
+
+### Middleware
+
+Papago middleware consists of defining 2 functions, `before` and `after` and assigning them to the `papago_middleware_t` struct. The `before` function is ran on every request and is required to be present. The `after` function is optional.
+
+```c
+static bool
+mw_before(papago_request_t *req, papago_response_t *res, void *user_data);
+
+static void
+mw_after(papago_request_t *req, papago_response_t *res, void *user_data);
+```
+
+```c
+papago_middleware_t middleware = {
+    .before    = mw_before,
+    .after     = mw_after,
+    .user_data = NULL,
+};
+```
+
+After defining the middleware and assigning the functions to the struct, Papago supports setting the middleware to run globally or on specific routes. This is especially helpful when writing loggers or authentication middleware.
+
+```c
+// global middleware - runs on ALL routes
+papago_middleware_add(server, middleware);
+
+// path-specific - runs only on /api/* routes
+papago_middleware_path_add(server, "/api", middleware);
+```
+
+Examples of some common middlewares (logger, rate-limiting) can be found in the [examples](examples/) directory.
+
+### Websocket
+
+Below is example code of how to use the websocket functionality. For the available websocket client API, reference the [Papago Websocket Client Header](papago_wsc.h) file.
+
+```c
+void
+ws_on_connect(papago_ws_connection_t *conn)
+{
+    printf("Client connected: %s\n", papago_ws_get_client_ip(conn));
+    papago_ws_send(conn, "{\"type\":\"welcome\"}");
+}
+
+void
+ws_on_message(papago_ws_connection_t *conn, const char *message,
+              size_t length, bool is_binary)
+{
+    printf("Received: %s\n", message);
+    
+    // echo back
+    papago_ws_send(conn, message);
+    
+    // or broadcast to all
+    papago_ws_broadcast(papago_get_current_server(), message);
+}
+
+void
+ws_on_close(papago_ws_connection_t *conn)
+{
+    printf("client disconnected\n");
+}
+
+void
+ws_on_error(papago_ws_connection_t *conn, const char *error)
+{
+    fprintf(stderr, "error: %s\n", error);
+}
+
+// register websocket endpoint
+papago_ws_endpoint(server, "/ws", 
+    ws_on_connect, ws_on_message, ws_on_close, ws_on_error);
+```
+
+Client-side JavaScript:
+
+```javascript
+const ws = new WebSocket('ws://localhost:8081/ws');
+
+ws.onopen = () => ws.send('Hello!');
+ws.onmessage = (e) => console.log('Received:', e.data);
+```
+
+### Request & Response
+
+```c
+void
+handler(papago_request_t *req, papago_response_t *res, void *user_data)
+{
+    // read request
+    const char *header = papago_req_header(req, "Content-Type");
+    const char *id = papago_req_param(req, "id");
+    const char *search = papago_req_query(req, "q");
+    const char *body = papago_req_body(req);
+    
+    // send response
+    papago_res_status(res, PAPAGO_STATUS_OK);
+    papago_res_header(res, "X-Custom", "value");
+    papago_res_json(res, "{\"status\":\"ok\"}");
+}
+```
+
+To build the client along with the Papago framework, use: `make PAPAGO_WITH_WSC` and `sudo make install PAPAGO_WITH_WSC=1`.
+
+## Metrics
+
+To expose the Prometheus endpoint, register the metrics handler in your application.
+
+```c
+papago_route(server, PAPAGO_GET, "/metrics", papago_metrics_handler, NULL);
+```
+
+### Threading Model
+
+- HTTP: Thread-per-connection (libmicrohttpd)
+- WebSocket: Event loop in separate thread
+- Broadcast: Thread-safe with mutex protection

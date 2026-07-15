@@ -1,0 +1,62 @@
+[
+  {
+    "slug": "libpapago",
+    "name": "libpapago",
+    "tagline": "Modern, Powerful, and extremely Simple C Web Framework.",
+    "file": "libpapago.md"
+  },
+  {
+    "slug": "libsaguaro",
+    "name": "libsaguaro",
+    "tagline": "Lightweight authorization/RBAC library.",
+    "file": "libsaguaro.md"
+  },
+  {
+    "slug": "libgithub",
+    "name": "libgithub",
+    "tagline": "C client library for the GitHub REST API.",
+    "file": "libgithub.md"
+  },
+  {
+    "slug": "liblogger",
+    "name": "liblogger",
+    "tagline": "Structured, leveled logging (JSON) for C applications.",
+    "file": "liblogger.md"
+  },
+  {
+    "slug": "libmaple",
+    "name": "libmaple",
+    "tagline": "Lightweight, embeddable template engine written in pure C with no dependencies.",
+    "file": "libmaple.md"
+  },
+  {
+    "slug": "libspinner",
+    "name": "libspinner",
+    "tagline": "C library with 90 configurable terminal spinner/progress indicators.",
+    "file": "libspinner.md"
+  },
+  {
+    "slug": "librattler",
+    "name": "librattler",
+    "tagline": "Feature-rich framework for building command-line applications in C with no dependencies.",
+    "file": "librattler.md"
+  },
+  {
+    "slug": "libretry",
+    "name": "libretry",
+    "tagline": "Library for running functions that may fail and need be tried again.",
+    "file": "libretry.md"
+  },
+  {
+    "slug": "libbenchmark",
+    "name": "libbenchmark",
+    "tagline": "Simple library to benchmark C functions across N of threads.",
+    "file": "libbenchmark.md"
+  },
+  {
+    "slug": "libcrosscheck",
+    "name": "libcrosscheck",
+    "tagline": "Simple yet powerful unit testing library.",
+    "file": "libcrosscheck.md"
+  }
+]

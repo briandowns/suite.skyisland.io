@@ -1,0 +1,118 @@
+# maple
+
+**maple** is a lightweight, embeddable template engine written in pure C. It provides variables, conditional logic, loops, arithmetic, comparisons, functions, file includes, and caching, with no dependencies.
+
+Inspired by Go’s `text/template` — but built for C developers who want speed, simplicity, and full control.
+
+For a quick look at functionality, run: `make example && ./example`. More detailed examples can found in the `examples` directory.
+
+## Build & Install
+
+To build and install the shared object for your system, run:
+
+```sh
+make
+```
+
+```sh
+sudo make install
+```
+
+If linking directly against the library directly, include `-lm` to your ldflags.
+
+## Features
+
+### Core
+
+- **Variable substitution**:  
+  `{{ name }}`
+  
+  A single symbol between the double curly braces indicates a variable. If that variable has been set on the context, this will be rendered with whitespace trimmed.
+
+- **Function calls**:  
+  Call built‑in or custom C functions
+  
+  * `{{ lower name }}`
+  * `{{ upper name }}`
+  * `{{ title name }}`
+  * `{{ reverse name }}`
+
+- **Whitespace trimming**:  
+  Surrounding whitespace inside tags is automatically removed.
+
+### Expression & Logic Support
+
+- **Arithmetic expressions**:
+
+  Handles `+`, `-`, `*`, `/`, `()` with correct operator precedence.
+  All numbers are handled as doubles. If the value is a whole number the decimal point and trailing 0's will not be displayed.
+  Supports 2 points of precision
+
+- **Comparison operators**:
+
+  `<`, `>`, `<=`, `>=`, `==`, `!=`
+
+- **Boolean logic**:
+
+  Supports `&&`, `||`, `!`.
+
+- **Unified numeric/logical evaluation**:
+
+  Same syntax usable anywhere, even inside `if` or template output.
+
+### Includes
+
+Additional template files can be loaded from within other templates with the following syntax:
+
+```js
+{{ include "another_template.tmpl" }}
+```
+
+---
+
+### Control Flow
+
+```js
+{{ if (x + y) >= 10 && age <>; 30 }}
+Condition is true
+{{ else }}
+Condition is false
+{{ end }}
+```
+
+### HTML 
+
+All values are HTML escaped by default.
+
+If a value contains HTML or characters that could be replaced by the escaping process, use the `safe` keyword.
+
+```js
+{{ safe var_containing_known_good_html }}
+```
+
+### Error Handling
+
+Functions that can error will return a `int` value of either 0 or 1, 0 for success or 1 for an error. That value is also stored on the `ctx` value that's passed to the function. The `ctx` value also carries an error string associated with the error.
+
+```c
+int ret = mp_render_segment(ctx, out, tpl, NULL, ".");
+if (ret != 0) {
+    printf("error code: %d, error code str: %s, error message: %s\n",
+        mp_err_code_str(ctx), mp_err_code(ctx), mp_strerror(ctx));
+    return 1;
+}
+```
+
+This pattern should be used when extending functionality.
+
+## Tests
+
+All tests can be found in the `tests/` directory and are easily extended.
+
+To run:
+
+```sh
+make tests
+```
+
+Tests are compiled with debug symbols.

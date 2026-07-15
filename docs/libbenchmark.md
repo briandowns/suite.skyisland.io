@@ -1,0 +1,69 @@
+# benchmark
+
+**benchmark** is a small library that provides a single function named `benchmark` to perform micro-benchmarks on a given function spread across a given number of threads. This library was heavily inspired by [Tidwall's](github.com/tidwall) [lotsa](github.com/tidwall/lotsa) Go package.
+
+Operation:
+
+`benchmark` takes 3 arguments. The first is the number of times you want the function executed, the second is the number of threads, and the third, the function you want executed. If either the number of operations or threads is less than 1 `-1` is returned indicating an error state. If the thread count is 1, execution will remain in the current process however if it's larger than 1, execution will be distributed across the threads evenly based on the number of operations given.
+
+## Build & Install
+
+To build a shared object for your system, run:
+
+```sh
+make
+```
+
+```sh
+sudo make install
+```
+
+## Example 
+
+```c
+#include <stdint.h>
+#include <stdio.h>
+
+#include "benchmark.h"
+
+void
+fizz_buzz(uint64_t i)
+{
+    if (i % 15 == 0) {
+        printf("fizzbuzz\n");
+    } else if (i % 5 == 0) {
+        printf("buzz\n");
+    } else if (i % 3 == 0) {
+        printf("fizz\n");
+    } else {
+        printf("%llu\n", i);
+    }
+}
+
+int
+main(int argc, char** argv)
+{
+    benchmark(100, 10, fizz_buzz);
+    return 0;
+}
+```
+
+Output: 
+
+```sh
+100 ops over 10 threads in 0.001524 sec, inf/sec 15240.00 ns/op
+```
+
+## Test
+
+```sh
+make test
+```
+
+## Installation
+
+Installation is currently supported on Linux and MacOS. There will be an effort to get this installed on FreeBSD soon.
+
+```sh
+sudo make install
+```

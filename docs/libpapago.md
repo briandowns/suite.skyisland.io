@@ -8,7 +8,7 @@ Below is a very simple demonstration of how to create a handler for a `GET` requ
 
 You can make all examples with `make examples_all PAPAGO_USE_MAPLE=1`.
 
-```sh
+```
 make example
 ```
 

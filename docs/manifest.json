@@ -2,13 +2,13 @@
   {
     "slug": "libpapago",
     "name": "libpapago",
-    "tagline": "Modern, Powerful, and extremely Simple C Web Framework.",
+    "tagline": "Modern, powerful, fast, and extremely simple C web framework.",
     "file": "libpapago.md"
   },
   {
     "slug": "libsaguaro",
     "name": "libsaguaro",
-    "tagline": "Lightweight authorization/RBAC library.",
+    "tagline": "Lightweight authorization / RBAC library.",
     "file": "libsaguaro.md"
   },
   {
@@ -20,7 +20,7 @@
   {
     "slug": "liblogger",
     "name": "liblogger",
-    "tagline": "Structured, leveled logging (JSON) for C applications.",
+    "tagline": "Structured, leveled logging for C applications.",
     "file": "liblogger.md"
   },
   {
@@ -32,7 +32,7 @@
   {
     "slug": "libspinner",
     "name": "libspinner",
-    "tagline": "C library with 90 configurable terminal spinner/progress indicators.",
+    "tagline": "C library with 90 configurable terminal spinner / progress indicators.",
     "file": "libspinner.md"
   },
   {

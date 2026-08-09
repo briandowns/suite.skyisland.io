@@ -1,10 +1,11 @@
 # papago
 
-Modern web framework designed to be full featured and powerful all while being extremely simple to use.
+Modern web framework designed to be simple, full featured, and powerful all while being extremely user friendly.
 
 ## Features
 
 * RESTful Routing - GET, POST, PUT, DELETE, PATCH support
+* SSL/TLS Encryption - Server and client side
 * Path Parameters - Dynamic routes like `/users/:id`
 * Wildcard URIs - Example: `/api/v1/*` 
 * Query Parameters - Parse URL query strings
@@ -15,14 +16,16 @@ Modern web framework designed to be full featured and powerful all while being e
 * WebSocket Support - Real-time bidirectional communication
 * WebSocket Client - included
 * Embedded File Support - Embed HTML, JS, CSS, etc into the application
-* JSON Responses - Built*in JSON helpers
+* JSON Responses - Built-in JSON helpers
 * Static Files - Serve files from directories
 * Thread-Safe - Built on proven concurrent architecture
-* Low Dependencies - Only requires libmicrohttpd + libwebsockets
+* Few Dependencies - Only requires libmicrohttpd + libwebsockets
 * Rate limiting by IP
 * Compression with Gzip
+* CORS Support
 * Metrics collection and exposure via Prometheus endpoint
 * Simple HTTP Client
+* Extensible Middleware System
 
 ### MIME Types Supported
 HTML, CSS, JS, JSON, XML, TXT
@@ -36,7 +39,8 @@ WOFF, WOFF2, TTF
 
 * libmicrohttpd
 * libwebsockets
-* openssl
+* GnuTLS
+* Zlib
 * libmaple - [Maple Template Engine](https://github.com/briandowns/libmaple)
 
 ## Build
@@ -170,6 +174,12 @@ search_handler(papago_request_t *req, papago_response_t *res, void *user_data)
 papago_route(server, PAPAGO_GET, "/search", search_handler, NULL);
 ```
 
+### Convenience Functions
+
+Convenience functions are provided to make seneding responses even easier.
+
+`papago_res_send`, `papago_res_html`, `papago_res_json` are meant to be used when sending simple text, HTML, and JSON respectively. The last 2 set appropriate headers for the payload while the first leaves this to the user.
+
 ### Middleware
 
 Papago middleware consists of defining 2 functions, `before` and `after` and assigning them to the `papago_middleware_t` struct. The `before` function is ran on every request and is required to be present. The `after` function is optional.
@@ -260,7 +270,8 @@ void
 handler(papago_request_t *req, papago_response_t *res, void *user_data)
 {
     // read request
-    const char *header = papago_req_header(req, "Content-Type");
+    const char *content_type = papago_req_header(req,
+        PAPAGO_RESPONSE_HEADER_CONTENT_TYPE);
     const char *id = papago_req_param(req, "id");
     const char *search = papago_req_query(req, "q");
     const char *body = papago_req_body(req);
